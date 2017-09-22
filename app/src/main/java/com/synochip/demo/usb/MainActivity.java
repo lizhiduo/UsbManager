@@ -1234,7 +1234,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		mDevMsg.setEnabled(!state);
 		mUpImage.setEnabled(!state);
 		mClear.setEnabled(!state);
-		//mOpen.setEnabled(!state);
+		mOpen.setEnabled(!state);
 		mSearch.setEnabled(!state);
 		mUpChar.setEnabled(!state);
 		mDownChar.setEnabled(!state);
