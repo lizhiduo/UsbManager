@@ -19,6 +19,8 @@ import com.synochip.demo.usb.R;
 import com.synochip.sdk.ukey.Tool;
 import com.synochip.sdk.ukey.OTG_KEY;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,13 +31,18 @@ import android.R.string;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.text.method.DigitsKeyListener;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -76,6 +83,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	private UsbManager mUsbManager;
 	private UsbDevice mDevice;
 	private PendingIntent mPermissionIntent;
+
+	private int MAX_ENROLL = 2;
 
 	boolean globalControl = true;
 	
@@ -405,8 +414,19 @@ public class MainActivity extends  Activity implements View.OnClickListener {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
-    
-    public static final String bytesToHexString(byte[] bArray) {
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()){
+			case R.id.menu_settings:
+					set_max_enroll_cnt();
+				break;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
+	public static final String bytesToHexString(byte[] bArray) {
 		  StringBuffer sb = new StringBuffer(bArray.length);
 		  String sTemp;
 		  for (int i = 0; i < bArray.length; i++) {
@@ -484,21 +504,23 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		super.onDestroy();
 	}
 	private class myAsyncTask extends AsyncTask<Void, Void, Void> {
-		
-		   protected void onPostExecute(final Void result) {
-		       super.onPostExecute(result);
-		      if (mResponseTextView.getLineCount() > CNT_LINES)
-		      {
-		    	  //Toast.makeText(getApplicationContext(), "LINE:"+mResponseTextView.getLineCount()+" CNT", Toast.LENGTH_SHORT).show();
-					mResponseTextView.scrollTo(0,
-							(mResponseTextView.getLineCount() - CNT_LINES)
-									* mResponseTextView.getLineHeight()+5);
-			  } 
-	}
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			if (mResponseTextView.getLineCount() > CNT_LINES)
+			{
+				//Toast.makeText(getApplicationContext(), "LINE:"+mResponseTextView.getLineCount()+" CNT", Toast.LENGTH_SHORT).show();
+				mResponseTextView.scrollTo(0,
+						(mResponseTextView.getLineCount() - CNT_LINES)
+								* mResponseTextView.getLineHeight()+5);
+			}
+		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
 			// TODO Auto-generated method stub
+
 			return null;
 		}
 	}
@@ -819,11 +841,11 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 				publishProgress("OK");
 				
 				//生成模板
-				if( cnt == 1)
+				if( cnt < MAX_ENROLL)
 				{
 					if( (ret = msyUsbKey.PSGenChar(DEV_ADDR, CHAR_BUFFER_A)) != PS_OK )
 					{
-						publishProgress("ָ指纹1生成特征失败:"+ret);
+						publishProgress("ָ指纹"+ cnt +"生成特征失败:"+ret);
 						return -1;
 					}
 					else {
@@ -831,11 +853,11 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 						//publishProgress("生成模板失败");
 					}
 				}
-				if( cnt == 2)
+				if( cnt == MAX_ENROLL)
 				{
 					if( (ret = msyUsbKey.PSGenChar(DEV_ADDR, CHAR_BUFFER_B)) != PS_OK )
 					{
-						publishProgress("ָ指纹2生成特征失败:"+ret);
+						publishProgress("ָ指纹"+cnt+"生成特征失败:"+ret);
 						continue;
 					}
 					else {
@@ -843,7 +865,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 					}
 					if( msyUsbKey.PSRegModule(DEV_ADDR) != PS_OK )
 					{
-						bar.setProgress(0);
+						//bar.setProgress(0);
 						thread_i = 0;
 						thread_sum = 0;
 						publishProgress("生成模板失败，请重新录入");
@@ -858,7 +880,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 					}
 					if( msyUsbKey.PSStoreChar(DEV_ADDR, 1, fingerCnt) != PS_OK)
 					{
-						bar.setProgress(0);
+						//bar.setProgress(0);
 						thread_i = 0;
 						thread_sum = 0;
 						publishProgress("存储特征失败,请重新录入");
@@ -927,7 +949,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 				}
 				Bitmap bitmap = BitmapFactory.decodeStream(localStream);
 				fingerView.setImageBitmap(bitmap);
-				Progress += 50;
+				Progress += 100/MAX_ENROLL;
 				bar.setProgress(Progress);
 				try {
 					localStream.close();
@@ -1216,5 +1238,27 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		mSearch.setEnabled(!state);
 		mUpChar.setEnabled(!state);
 		mDownChar.setEnabled(!state);
+	}
+
+	private void set_max_enroll_cnt(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("请输入最大录入次数");
+		final EditText editText = new EditText(this);
+//                editText.setInputType(InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE);
+		editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(2)});
+		editText.setKeyListener(DigitsKeyListener.getInstance("1234567890"));
+		builder.setView(editText);
+		builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i) {
+				String s = editText.getText().toString();
+				//logMsg(s);
+				if(!s.isEmpty()){
+					MAX_ENROLL = Integer.parseInt(s);
+				}
+			}
+		});
+		builder.setNegativeButton("exit",null);
+		builder.show();
 	}
 }

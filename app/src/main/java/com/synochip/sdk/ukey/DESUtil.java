@@ -47,7 +47,7 @@ public class DESUtil {
     }
  
     /**
-      * ½âÃÜÒÔ byte[] ÃÜÎÄÊäÈë , ÒÔ byte[] Ã÷ÎÄÊä³ö
+      * è§£å¯†ä»¥ byte[] å¯†æ–‡è¾“å…¥ , ä»¥ byte[] æ˜æ–‡è¾“å‡º
       *
       * @param byteD
       * @return
