@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>  
+<LinearLayout  
+  xmlns:android="http://schemas.android.com/apk/res/android"  
+  android:orientation="vertical"  
+  android:layout_width="match_parent"  
+  android:layout_height="match_parent"
+  android:weightSum="1"
+  android:background="#FFFFFF">  
+  <LinearLayout
+android:orientation="horizontal"  
+android:layout_width="fill_parent"  
+android:layout_height="wrap_content"  
+>  
+    <TextView android:text="管理员pin:" android:id="@+id/textViewlock1" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>  
+    <EditText android:layout_height="wrap_content" android:layout_weight="1" android:layout_width="wrap_content" android:id="@+id/adminPin" android:text="123456" android:textColor="#000000">  
+        <requestFocus></requestFocus>  
+    </EditText>  
+   </LinearLayout>  
+
+<LinearLayout
+android:layout_width="fill_parent"  
+android:layout_height="wrap_content"  >  
+    <TextView android:text="新用户pin:" android:id="@+id/textViewlock2" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>  
+    <EditText android:layout_height="wrap_content" android:layout_weight="1" android:layout_width="wrap_content" android:id="@+id/userPin" android:inputType="textPassword" android:text="111111" android:textColor="#000000"></EditText>  
+ </LinearLayout>
+ </LinearLayout>

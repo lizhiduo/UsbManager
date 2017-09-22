@@ -1,0 +1,130 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/LinearLayout2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity" >
+
+
+    <TextView
+                android:id="@+id/TVLog"
+                android:layout_width="fill_parent"
+                android:layout_height="220dp"
+                android:scrollbars="vertical"
+                android:background="#607b8b"
+         		android:textColor="#ffffff"
+         		android:singleLine="false"
+                android:padding="10dp"
+                 />
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+            
+            <Button
+                android:id="@+id/BOpen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.06"
+                android:text="@string/open" />
+            
+  			<Button
+                android:id="@+id/BTEnroll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.06"
+                android:text="录入指纹" />
+
+            <Button
+                android:id="@+id/BClose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.04"
+                android:text="@string/close" />
+
+            <Button 
+                android:id="@+id/BStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.04"
+                android:text="@string/stop"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/BSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="连续搜索" />
+            
+            <Button
+                android:id="@+id/BTClear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="清空指纹库"/>
+            <Button
+                android:id="@+id/upImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="上传图像"/>
+            <Button 
+                android:id="@+id/devMsg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="查看设备信息"/>
+                />
+            
+       </LinearLayout>
+       <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content" >
+         <Button 
+             android:id="@+id/upChar"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_weight="1"
+             android:text="上传特征"
+             />
+          <Button 
+             android:id="@+id/downChar"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_weight="1"
+             android:text="下载特征"
+             />
+       </LinearLayout>
+       <ProgressBar 
+            android:id = "@+id/bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
+            android:layout_height="30dp"
+            android:visibility="gone"
+            />
+       	<ImageView 
+       	    android:id="@+id/fingerImage"
+       	    android:layout_width="256px"
+       	    android:layout_height="288px"
+       	    />
+       	<TextView 
+       	    android:id="@+id/imputTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+       	    />
+    </LinearLayout>
+	 
+</LinearLayout>

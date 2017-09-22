@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>  
+<LinearLayout  
+  xmlns:android="http://schemas.android.com/apk/res/android"  
+  android:orientation="vertical"  
+  android:layout_width="match_parent"  
+  android:layout_height="match_parent" 
+  android:weightSum="1"
+  android:background="#FFFFFF">  
+  <LinearLayout
+android:orientation="horizontal"  
+android:layout_width="fill_parent"  
+android:layout_height="wrap_content"  
+>  
+    <TextView android:text="输入旧pin:" android:id="@+id/textViewchange" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>  
+    <EditText android:id="@+id/changeold" android:layout_height="wrap_content" android:layout_weight="1" android:layout_width="wrap_content" android:text="222222" android:textColor="#000000">  
+        <requestFocus></requestFocus>  
+    </EditText>  
+   </LinearLayout>  
+
+<LinearLayout
+android:layout_width="fill_parent"  
+android:layout_height="wrap_content"  >  
+    <TextView android:text="输入新pin:" android:id="@+id/textViewchange2" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>  
+    <EditText android:id="@+id/changenew" android:layout_height="wrap_content" android:layout_weight="1" android:layout_width="wrap_content"  android:inputType="textPassword" android:text="111111" android:textColor="#000000"></EditText>  
+ </LinearLayout> 
+ </LinearLayout>
