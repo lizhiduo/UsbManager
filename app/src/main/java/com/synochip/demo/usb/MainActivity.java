@@ -36,6 +36,7 @@ import android.text.TextWatcher;
 import android.text.method.DigitsKeyListener;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,6 +45,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -118,7 +120,13 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	boolean bIsOpen=false;
 	byte[] g_TempData = new byte[512];
 	public boolean start_clt = false;
-	
+
+	NumberPicker mNumberPicker;
+//	private final static String[] number = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
+//	private int mSeletedIndex;
+	private boolean isChange = false;
+	private int txt1 = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -420,7 +428,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()){
 			case R.id.menu_settings:
-					set_max_enroll_cnt();
+					//set_max_enroll_cnt();
+				set_max_enroll();
 				break;
 		}
 
@@ -1261,5 +1270,92 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		});
 		builder.setNegativeButton("exit",null);
 		builder.show();
+	}
+
+	private void set_max_enroll(){
+		AlertDialog.Builder builder7 = new AlertDialog.Builder(
+				MainActivity.this);
+		builder7.setTitle("请输入录入次数");
+//                builder7.setIcon(R.mipmap.ic_launcher);
+
+		View view1 = LayoutInflater.from(MainActivity.this).inflate(
+				R.layout.number_picker, null);
+		mNumberPicker = (NumberPicker) view1.findViewById(R.id.city_picker);
+
+		init_number_picker(mNumberPicker);
+		//设置监听
+		mNumberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+			@Override
+			public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+//				mSeletedIndex = newVal;
+				isChange = true;
+			}
+		});
+		mNumberPicker.setOnScrollListener(new NumberPicker.OnScrollListener() {
+			@Override
+			public void onScrollStateChange(NumberPicker view, int scrollState) {
+				switch (scrollState) {
+					case NumberPicker.OnScrollListener.SCROLL_STATE_FLING:
+						Log.e("TAG", "SCROLL_STATE_FLING");
+						//惯性滑动
+						break;
+					case NumberPicker.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+						//手动滑动
+						Log.e("TAG", "SCROLL_STATE_TOUCH_SCROLL");
+						break;
+					case NumberPicker.OnScrollListener.SCROLL_STATE_IDLE:
+						//停止滑动
+						Log.e("TAG", "SCROLL_STATE_IDLE");
+//						txt1 = number[mSeletedIndex].toString();
+						if(isChange){
+							txt1 = view.getValue();
+							MAX_ENROLL = txt1;
+						}
+
+
+						break;
+				}
+
+			}
+		});
+		builder7.setView(view1);
+		builder7.setPositiveButton("确定",
+				new android.content.DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						Toast.makeText(
+								MainActivity.this,
+								"设置次数录入次数: " + MAX_ENROLL , Toast.LENGTH_LONG)
+								.show();
+						isChange = false;
+					}
+				});
+		builder7.setNegativeButton("取消",
+				new android.content.DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+
+					}
+				});
+		builder7.create();
+		builder7.show();
+	}
+
+	private void init_number_picker(NumberPicker np){
+		//设置数据源
+//		np.setDisplayedValues(number);
+//		//设置数据长度
+//		np.setMinValue(0);
+//		np.setMaxValue(number.length - 1);
+//		np.setValue(4);
+		//禁止弹出输入键盘
+		np.setDescendantFocusability(mNumberPicker.FOCUS_BLOCK_DESCENDANTS);
+
+		np.setMinValue(2);
+		np.setMaxValue(15);
+		np.setValue(2);
 	}
 }
