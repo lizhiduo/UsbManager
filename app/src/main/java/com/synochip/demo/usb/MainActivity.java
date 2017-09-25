@@ -309,6 +309,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		}
 		else if( v == mSearch ) //搜索指纹
 		{
+			bar.setVisibility(View.INVISIBLE);
 			 globalControl = true;
 			 ctlStatus(true);
 			 SearchAsyncTask asyncTask_search = new SearchAsyncTask();

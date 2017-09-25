@@ -93,14 +93,16 @@
        <LinearLayout
          android:layout_width="match_parent"
          android:layout_height="wrap_content" >
-         <Button 
+         <Button
+             android:visibility="invisible"
              android:id="@+id/upChar"
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
              android:layout_weight="1"
              android:text="上传特征"
              />
-          <Button 
+          <Button
+              android:visibility="invisible"
              android:id="@+id/downChar"
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
