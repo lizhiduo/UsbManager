@@ -78,7 +78,28 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	private static int fingerCnt = 1;
 	private static int IMAGE_X = 256;
 	private static int IMAGE_Y = 288;
-	
+
+	private static final byte INVALID_ID = 0x0b;
+	private static final byte EXIST_ID = 0x22;
+	private static final byte ERROR_ENROLL_CNT = 0x25;
+	private static final byte ENROLL_CNT_FULL = 0x1f;
+
+	private static final byte CREATE_FEATURE_FAIL = 0x07;
+
+	private static final byte TIME_OUT = 0x26;
+	private static final byte REPETITION_FINGER = 0x27;
+	private static final byte STORE_FAIL = 0x01;
+	private static final byte COMPOUND_TEMP_FAIL = 0x0A;
+
+	private static final byte TEMP_INEXIST = 0x23;
+	private static final byte FINGER_TMP = 0x24;
+	private static final byte FINGER_OK = 0x01;
+	private static final byte VERIFY_OK = 0x05;
+	private static final byte VERIFY_FAIL = 0x09;
+	private static final byte VERIFY_FEATURE_FAIL = 0x05;
+	private static final byte AUTO_VERIFY_FAIL = 0x01;
+	private static final int PS_FAIL = 0x01;
+
 	//private int opened = 0;
 	public int thread_i = 0;
 	public int thread_sum = 0;
@@ -86,7 +107,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	private UsbDevice mDevice;
 	private PendingIntent mPermissionIntent;
 
-	private int MAX_ENROLL = 2;
+	private int MAX_ENROLL = 4;
+	private int verify_fingerId = 0;
 
 	boolean globalControl = true;
 	
@@ -105,6 +127,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	private Button mStop;
 	private Button mUpChar;
 	private Button mDownChar;
+	private Button mAutoEnroll;
+	private Button mAutoIdentify;
 	
 	String imagePath = "finger.bmp";
 	byte[] fingerBuf = new byte[IMAGE_X*IMAGE_Y];
@@ -126,6 +150,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 //	private int mSeletedIndex;
 	private boolean isChange = false;
 	private int txt1 = 2;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,6 +190,12 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		
 		mDownChar = (Button)findViewById(R.id.downChar);
 		mDownChar.setOnClickListener(this);
+
+		mAutoEnroll = (Button)findViewById(R.id.auto_enroll);
+		mAutoEnroll.setOnClickListener(this);
+
+		mAutoIdentify = (Button)findViewById(R.id.auto_identify);
+		mAutoIdentify.setOnClickListener(this);
 		
 		mImputTextView = (TextView)findViewById(R.id.imputTextView);
 		mResponseTextView = (TextView) findViewById(R.id.TVLog);
@@ -414,6 +445,28 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}else if(v == mAutoEnroll){
+			if( fingerCnt >= 256)
+			{
+				logMsg("指纹库已满，请删除");
+				return;
+			}
+
+			ctlStatus(true);
+			globalControl = true;
+			bar.setVisibility(View.VISIBLE);
+			bar.setProgress(0);
+
+			AutoEnrollAsyncTask autoEnrollAsyncTask = new AutoEnrollAsyncTask();
+			autoEnrollAsyncTask.execute(1);
+
+		}else if(v == mAutoIdentify){
+			set_finger_id();
+			bar.setVisibility(View.INVISIBLE);
+			globalControl = true;
+			ctlStatus(true);
+//			AutoIdentifyAsyncTask autoIdentifyAsyncTask = new AutoIdentifyAsyncTask();
+//			autoIdentifyAsyncTask.execute(1);
 		}
     }
 
@@ -793,7 +846,233 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 			return;
 		}
 	}
-			
+
+	public class AutoEnrollAsyncTask extends AsyncTask<Integer, String, Integer>{
+
+		byte[] param = new byte[2];
+		int Progress = 0;
+
+		//子线程
+		@Override
+		protected Integer doInBackground(Integer... integers) {
+			int ret = 0;
+
+			byte[] state = new byte[3];
+
+			ret = msyUsbKey.PSAutoEnroll(DEV_ADDR, fingerCnt, MAX_ENROLL, param);
+			if(ret < 0){
+				return -1;
+			}
+			//判断参数合法性
+			ret = msyUsbKey.PSGetEnrollSta(state);
+			if(state[0] == PS_OK){
+				publishProgress("指令合法性检测成功");
+			}else{
+				if(state[0] == INVALID_ID){
+					publishProgress("指定 ID 号无效");
+					return -1;
+				}else if(state[0] == ERROR_ENROLL_CNT){
+					publishProgress("次数配置错误");
+					return -1;
+				}else if(state[0] == EXIST_ID ){
+					publishProgress("指定 ID 号已存在");
+					return -1;
+				}else if(state[0] == ENROLL_CNT_FULL){
+					publishProgress("指纹库已满");
+					return -1;
+				}
+
+				return -1;
+			}
+
+			while(true){
+
+				if( globalControl == false )
+				{
+
+					ret = msyUsbKey.PSCancel(DEV_ADDR);
+					publishProgress("ret； " + ret);
+					if(ret == PS_OK){
+						publishProgress("取消自动注册模板成功");
+					}
+
+					publishProgress("录入指纹=>停止");
+
+					return -1;
+				}
+
+				ret = msyUsbKey.PSGetEnrollSta(state);
+				if(state[0] == PS_OK){
+					if(state[1] == 0x03){
+						publishProgress("第" + state[2] +"次录入成功");
+						publishProgress("ENROLL_OK");
+					}else if(state[1] == 0x04){
+						publishProgress("合成模板成功");
+					}else if(state[1] == 0x05){
+						publishProgress("指纹未重复");
+					}else if(state[1] == 0x06 ){
+						publishProgress("存储成功");
+						publishProgress("OK");
+						break;
+					}
+				}else{
+					if(state[0]  == COMPOUND_TEMP_FAIL){
+						publishProgress("合成模板失败");
+					}else if(state[0] == REPETITION_FINGER){
+						publishProgress("指纹重复");
+						return -1;
+					}else if(state[0] == TIME_OUT){
+						publishProgress("自动录入超时");
+						break;
+					}else if(state[0] == CREATE_FEATURE_FAIL){
+						publishProgress("第" + state[2] +"次特征录入失败");
+					}else if(state[0] == STORE_FAIL){
+						publishProgress("存储失败");
+					}
+				}
+
+
+				try {
+					Thread.sleep(20);
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+
+			}
+
+			return 0;
+		}
+
+		//线程开始 UI
+		@Override
+		protected void onPreExecute() {
+			logMsg("AUTO录入指纹=>开始,请放上手指ָ");
+			mImputTextView.setText("录入指纹=>开始,请放上手指ָ");
+		}
+
+		//线程结束 UI
+		@Override
+		protected void onPostExecute(Integer integer) {
+			globalControl = false;
+			ctlStatus(false);
+			if(0 == integer )
+			{
+				if( fingerCnt > 256)
+				{
+					logMsg("ָ指纹存储256个手指已满，请删除指纹数据");
+					return;
+				}
+				//logMsg("录入指纹成功");
+				//logMsg("fingerFeature[0]:"+Base64.encodeToString(fingerFeature[0], Base64.DEFAULT ));
+				fingerCnt++;
+				bar.setProgress(100);
+				return;
+			}
+		}
+		//UI
+		@Override
+		protected void onProgressUpdate(String... values) {
+			if( values[0].equals("OK") ){
+				logMsg("AUTO录入指纹成功");
+				return;
+			}else if(values[0].equals("ENROLL_OK")){
+				Progress += 100/MAX_ENROLL;
+				bar.setProgress(Progress);
+				return;
+			}
+
+			logMsg(values[0]);
+
+		}
+	}
+
+	public class AutoIdentifyAsyncTask extends AsyncTask<Integer, String, Integer>{
+		byte[] param = new byte[2];
+
+		@Override
+		protected void onPreExecute() {
+			logMsg("搜索指纹=>开始,请放上手指ָ");
+		}
+
+		@Override
+		protected void onPostExecute(Integer integer) {
+			globalControl = false;
+			ctlStatus(false);
+		}
+
+		@Override
+		protected void onProgressUpdate(String... values) {
+
+			logMsg(values[0]);
+		}
+
+		@Override
+		protected Integer doInBackground(Integer... integers) {
+			int ret = 0;
+			int fingerId = 0;
+			byte[] state = new byte[6];
+
+			ret = msyUsbKey.PSAutoIdentify(DEV_ADDR, verify_fingerId, param);
+			if(ret < 0){
+				return -1;
+			}
+			//判断参数合法性
+			ret = msyUsbKey.PSGetIdentifySta(state);
+			if(state[0] == PS_OK) {
+				if(state[1] == PS_OK){
+					publishProgress("Identify 指令合法性检测成功");
+				}
+			}else{
+				if(state[0] == PS_FAIL){
+					if(state[1] == 0x00){
+						publishProgress("Identify 指令合法性检测失败");
+						return -1;
+					}
+				}
+			}
+
+			while(true){
+				ret = msyUsbKey.PSGetIdentifySta(state);
+				if(state[0] == TIME_OUT){
+					publishProgress("自动验证超时");
+					return -1;
+				}else if(state[0] == PS_OK){
+					if(state[1] == FINGER_OK){
+						publishProgress("录入指纹获取图像成功");
+					}else if(state[1] == VERIFY_OK){
+						fingerId = (state[2]<<8 | state[3]);
+						publishProgress("成功搜索到此指纹,ID===>" + fingerId);
+						break;
+					}
+				}else if(state[0] == VERIFY_FAIL){
+					if(state[1] == VERIFY_FEATURE_FAIL){
+						publishProgress("生产特征失败  比对失败");
+						return -1;
+						// /break;
+					}
+				}else if(state[0] == FINGER_TMP){
+					publishProgress("指纹库为空");
+					return -1;
+				}else if(state[0] == TEMP_INEXIST){
+					publishProgress("Temple不存在");
+					return -2;
+				}else if(state[0] == AUTO_VERIFY_FAIL){
+					publishProgress("比对失败");
+					return -1;
+				}else if(state[0] == INVALID_ID){
+					publishProgress("指定 ID 号无效");
+				}
+
+				try {
+					Thread.sleep(20);
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+
+			}
+			return 0;
+		}
+	}
 			
 	public class ImputAsyncTask extends AsyncTask<Integer, String, Integer>
 	{
@@ -1236,6 +1515,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		mStop.setEnabled(!state);
 		mUpChar.setEnabled(!state);
 		mDownChar.setEnabled(!state);
+		mAutoIdentify.setEnabled(!state);
+		mAutoEnroll.setEnabled(!state);
 	}
 	private void ctlStatus( boolean state)
 	{
@@ -1248,6 +1529,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		mSearch.setEnabled(!state);
 		mUpChar.setEnabled(!state);
 		mDownChar.setEnabled(!state);
+		mAutoIdentify.setEnabled(!state);
+		mAutoEnroll.setEnabled(!state);
 	}
 
 	private void set_max_enroll_cnt(){
@@ -1357,5 +1640,92 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		np.setMinValue(2);
 		np.setMaxValue(15);
 		np.setValue(2);
+	}
+
+
+
+	private void set_finger_id(){
+		AlertDialog.Builder builder7 = new AlertDialog.Builder(
+				MainActivity.this);
+		builder7.setTitle("请选择验证的指纹ID");
+//                builder7.setIcon(R.mipmap.ic_launcher);
+
+		View view1 = LayoutInflater.from(MainActivity.this).inflate(
+				R.layout.finger_picker, null);
+		mNumberPicker = (NumberPicker) view1.findViewById(R.id.city_picker);
+
+		init_finger_picker(mNumberPicker);
+		//设置监听
+		mNumberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+			@Override
+			public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+//				mSeletedIndex = newVal;
+				isChange = true;
+			}
+		});
+		mNumberPicker.setOnScrollListener(new NumberPicker.OnScrollListener() {
+			@Override
+			public void onScrollStateChange(NumberPicker view, int scrollState) {
+				switch (scrollState) {
+					case NumberPicker.OnScrollListener.SCROLL_STATE_FLING:
+						Log.e("TAG", "SCROLL_STATE_FLING");
+						//惯性滑动
+						break;
+					case NumberPicker.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+						//手动滑动
+						Log.e("TAG", "SCROLL_STATE_TOUCH_SCROLL");
+						break;
+					case NumberPicker.OnScrollListener.SCROLL_STATE_IDLE:
+						//停止滑动
+						Log.e("TAG", "SCROLL_STATE_IDLE");
+//						txt1 = number[mSeletedIndex].toString();
+						if(isChange){
+							txt1 = view.getValue();
+							verify_fingerId = txt1;
+						}
+
+						break;
+				}
+
+			}
+		});
+		builder7.setView(view1);
+		builder7.setPositiveButton("确定",
+				new android.content.DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						Toast.makeText(
+								MainActivity.this,
+								"设置次数录入次数: " + verify_fingerId , Toast.LENGTH_LONG)
+								.show();
+						isChange = false;
+
+						//开启验证线程
+						AutoIdentifyAsyncTask autoIdentifyAsyncTask = new AutoIdentifyAsyncTask();
+						autoIdentifyAsyncTask.execute(1);
+					}
+				});
+		builder7.setNegativeButton("取消",
+				new android.content.DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+
+					}
+				});
+		builder7.create();
+		builder7.show();
+	}
+
+	private void init_finger_picker(NumberPicker np){
+
+		//禁止弹出输入键盘
+		np.setDescendantFocusability(mNumberPicker.FOCUS_BLOCK_DESCENDANTS);
+
+		np.setMinValue(0);
+		np.setMaxValue(35);
+		np.setValue(0);
 	}
 }

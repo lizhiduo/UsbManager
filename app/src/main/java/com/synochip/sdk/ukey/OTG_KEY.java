@@ -9,6 +9,7 @@ import com.synochip.sdk.ukey.UsbStatus;
 import android.R.integer;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.util.Log;
 
 
 public class OTG_KEY {
@@ -44,6 +45,9 @@ public class OTG_KEY {
 	public final static byte EMPTY = 0x0d;
 	public final static byte READ_INDEXTABLE = 0x1f;
 	public final static byte UP_IMAGE = 0x0a;
+	public final static byte Auto_Cancel = 0x30;
+	public final static byte Auto_Enroll = 0x31;
+	public final static byte Auto_Identify = 0x32;
 	public final static int IMAGE_X = 256;
 	public final static int IMAGE_Y = 288;
 		
@@ -78,8 +82,18 @@ public class OTG_KEY {
 		
 	private byte[]  mAppHandle = new byte[2];
 	private boolean misOpen = false;
-	
-	
+
+	byte LED_1 = 0x01;
+	byte PRE_1 = 0x02;
+	byte STA_1 = 0x04;
+	byte ID_1 = 0x08;
+	byte CTL_1 = 0x10;
+	byte LEAVE_1 = 0x20;
+
+
+
+	byte[] buffer = new byte[MAX_PACKAGE_SIZE];
+
 	public OTG_KEY(UsbManager mManager, UsbDevice mDev) {
 		try {
 			msyUsbBase = null;
@@ -1916,11 +1930,170 @@ public class OTG_KEY {
 		
 	}
 	*/
+
+
+	public int VerifyAutoResponsePackage(byte packageTypt, byte[] data)
+	{
+		if( data[0] != packageTypt){
+			return -201;
+		}
+		int length = GetPackageLength(data);
+		if( packageTypt == RESPONSE)
+		{
+			return 0;
+		}
+		return -1;
+	}
 	
-	
-	
-	
-	
+	public int PSAutoEnroll(int addr, int bufferId, int enroll_cnt, byte[] param){
+
+		byte cmd[] = new byte[10];
+
+		int num;
+		int ret;
+
+		byte[] sendData = new byte[MAX_PACKAGE_SIZE];
+
+
+		cmd[0] = Auto_Enroll;
+		cmd[1] = (byte) (bufferId>>8 & 0xff);
+		cmd[2] = (byte) (bufferId & 0xff);
+		cmd[3] = (byte) enroll_cnt;
+//		cmd[4] = param[0];
+//		cmd[5] = param[1];
+		cmd[4] = 0x00;
+		cmd[5] = (byte) (~LEAVE_1 & ~STA_1 & (CTL_1 | ID_1 |  PRE_1 | LED_1));
+//		cmd[5] = 0x00;
+
+		num = fillPackage(sendData, CMD, 6, cmd);
+		if( num == -1)
+		{
+			return -3;
+		}
+		if((ret = SendPackageUDisk(addr, sendData)) != 0 )
+		{
+			return ret;
+		}
+
+		return ret;
+	}
+
+	public int PSGetEnrollSta(byte[] data){
+
+		byte[] getData = new byte[MAX_PACKAGE_SIZE];
+
+		if( 0 != GetPackageUDisk(getData) )
+		{
+			return -2;
+		}
+
+		if( buffer[2] == getData[2] &&  buffer[3] == getData[3] && buffer[4] == getData[4]){
+			data[0] = (byte)-201;
+			return -1;
+		}else{
+			buffer = getData;
+			for(int i=0; i<3; i++){
+				data[i] = getData[i+3];
+			}
+		}
+
+		return 0;
+	}
+
+	public int PSAutoIdentify(int addr, int bufferId, byte[] param){
+		byte cmd[] = new byte[10];
+
+		int num;
+		int ret;
+
+		byte[] sendData = new byte[MAX_PACKAGE_SIZE];
+
+
+		cmd[0] = Auto_Identify;
+		cmd[1] = 0x00;
+		cmd[2] = (byte) (bufferId>>8 & 0xff);
+		cmd[3] = (byte) (bufferId & 0xff);
+//		cmd[2] = (byte) 0xff;
+//		cmd[3] = (byte) 0xff;
+		cmd[4] = 0x00;
+		cmd[5] = (byte) (~STA_1 & ( PRE_1 | LED_1));
+
+
+		num = fillPackage(sendData, CMD, 6, cmd);
+		if( num == -1)
+		{
+			return -3;
+		}
+		if((ret = SendPackageUDisk(addr, sendData)) != 0 )
+		{
+			return ret;
+		}
+//		for(int i=0; i<12; i++){
+//			Log.d(appName, "sendData: "+Integer.toHexString(sendData[i]) );
+//		}
+        buffer[3] = (byte) 0xff;
+
+		return ret;
+	}
+
+	public int PSGetIdentifySta(byte[] data){
+
+		byte[] getData = new byte[MAX_PACKAGE_SIZE];
+
+		if( 0 != GetPackageUDisk(getData) )
+		{
+			return -2;
+		}
+
+		if( buffer[3] == getData[3] &&  buffer[4] == getData[4]){
+			data[0] = (byte)-201;
+			return -1;
+		}else{
+			buffer = getData;
+			for(int i=0; i<6; i++){
+				data[i] = getData[i+3];
+			}
+			for(int i=0; i<12; i++){
+				Log.d(appName, "getData: "+Integer.toHexString(getData[i]) );
+			}
+		}
+
+		return 0;
+	}
+
+	public int PSCancel(int addr){
+		byte[] cmd = new byte[10];
+		int num;
+		int result;
+		int ret;
+		byte[] sendData = new byte[MAX_PACKAGE_SIZE];
+		byte[] getData = new byte[MAX_PACKAGE_SIZE];
+
+		cmd[0] = Auto_Cancel;
+		num = fillPackage(sendData, CMD, 1, cmd);
+		if( num == -1)
+		{
+			return -3;
+		}
+		if((ret = SendPackageUDisk(addr, sendData)) != 0 )
+		{
+			return ret;
+		}
+		for(int i=0; i<12; i++){
+			Log.d(appName, "sendData: "+Integer.toHexString(sendData[i]) );
+		}
+		if( 0 != GetPackageUDisk(getData) )
+		{
+			return -2;
+		}
+		for(int i=0; i<12; i++){
+			Log.d(appName, "getData: "+Integer.toHexString(getData[i]) );
+		}
+		//Log.d(appName,"===================");
+		result = VerifyResponsePackage(RESPONSE, getData);
+		return result;
+	}
+
 	
 	public String synoprintf()
 	{

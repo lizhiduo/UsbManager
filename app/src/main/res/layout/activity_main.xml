@@ -90,6 +90,25 @@
                 />
             
        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+            <Button
+                android:id="@+id/auto_enroll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="自动注册模板"
+                />
+            <Button
+
+                android:id="@+id/auto_identify"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="自动验证指纹"
+                />
+        </LinearLayout>
        <LinearLayout
          android:layout_width="match_parent"
          android:layout_height="wrap_content" >
