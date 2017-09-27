@@ -1017,7 +1017,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 			int fingerId = 0;
 			byte[] state = new byte[6];
 
-			ret = msyUsbKey.PSAutoIdentify(DEV_ADDR, verify_fingerId, param);
+			ret = msyUsbKey.PSAutoIdentify(DEV_ADDR, 255, param);
 			if(ret < 0){
 				return -1;
 			}

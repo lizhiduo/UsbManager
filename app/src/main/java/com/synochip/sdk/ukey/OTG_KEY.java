@@ -1216,9 +1216,19 @@ public class OTG_KEY {
 		destinationLength[0] = nLen;
 		return 0;
 	}
+
+	private static int byteToPositive(byte b) {
+		if (b < 0) {
+			return b + 256;
+		} else {
+			return b;
+		}
+
+	}
+
 	public int EnCode(int addr, byte[] source, int sourceLen, byte[] destination, int[] destinationLength)
 	{
-		int i = 0,chkSum = 0;
+		int i = 0,chkSum = 0, tmp=0;
 		int ValH,ValL;
 		if(sourceLen > MAX_PACKAGE_SIZE){
 			return -1;
@@ -1231,7 +1241,8 @@ public class OTG_KEY {
 		destination[5] = (byte)(addr&0xff);
 		for( i = 0; i < sourceLen-2;i++)
 		{
-			chkSum += source[i];
+			tmp = byteToPositive(source[i]);
+			chkSum += tmp;
 			destination[6+i] = source[i];
 		}
 		ValL = (int)(chkSum&0xff);
@@ -2011,10 +2022,10 @@ public class OTG_KEY {
 
 		cmd[0] = Auto_Identify;
 		cmd[1] = 0x00;
-		cmd[2] = (byte) (bufferId>>8 & 0xff);
-		cmd[3] = (byte) (bufferId & 0xff);
-//		cmd[2] = (byte) 0xff;
-//		cmd[3] = (byte) 0xff;
+//		cmd[2] = (byte) (bufferId>>8 & 0xff);
+//		cmd[3] = (byte) (bufferId & 0xff);
+		cmd[2] = (byte) 255;
+		cmd[3] = (byte) 255;
 		cmd[4] = 0x00;
 		cmd[5] = (byte) (~STA_1 & ( PRE_1 | LED_1));
 
@@ -2028,9 +2039,9 @@ public class OTG_KEY {
 		{
 			return ret;
 		}
-//		for(int i=0; i<12; i++){
-//			Log.d(appName, "sendData: "+Integer.toHexString(sendData[i]) );
-//		}
+		for(int i=0; i<12; i++){
+			Log.d(appName, "sendData: "+Integer.toHexString(sendData[i]) );
+		}
         buffer[3] = (byte) 0xff;
 
 		return ret;
@@ -2053,9 +2064,9 @@ public class OTG_KEY {
 			for(int i=0; i<6; i++){
 				data[i] = getData[i+3];
 			}
-//			for(int i=0; i<12; i++){
-//				Log.d(appName, "getData: "+Integer.toHexString(getData[i]) );
-//			}
+			for(int i=0; i<12; i++){
+				Log.d(appName, "getData: "+Integer.toHexString(getData[i]) );
+			}
 		}
 
 		return 0;
