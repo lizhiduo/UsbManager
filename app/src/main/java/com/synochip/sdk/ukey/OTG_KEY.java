@@ -2053,9 +2053,9 @@ public class OTG_KEY {
 			for(int i=0; i<6; i++){
 				data[i] = getData[i+3];
 			}
-			for(int i=0; i<12; i++){
-				Log.d(appName, "getData: "+Integer.toHexString(getData[i]) );
-			}
+//			for(int i=0; i<12; i++){
+//				Log.d(appName, "getData: "+Integer.toHexString(getData[i]) );
+//			}
 		}
 
 		return 0;

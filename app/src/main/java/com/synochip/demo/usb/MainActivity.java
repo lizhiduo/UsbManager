@@ -948,7 +948,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 		@Override
 		protected void onPreExecute() {
 			logMsg("AUTO录入指纹=>开始,请放上手指ָ");
-			mImputTextView.setText("录入指纹=>开始,请放上手指ָ");
+			//mImputTextView.setText("录入指纹=>开始,请放上手指ָ");
 		}
 
 		//线程结束 UI
