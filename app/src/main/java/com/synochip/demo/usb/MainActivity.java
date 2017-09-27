@@ -920,6 +920,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 						publishProgress("合成模板失败");
 					}else if(state[0] == REPETITION_FINGER){
 						publishProgress("指纹重复");
+						publishProgress("FAIL");
 						return -1;
 					}else if(state[0] == TIME_OUT){
 						publishProgress("自动录入超时");
@@ -978,6 +979,10 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 			}else if(values[0].equals("ENROLL_OK")){
 				Progress += 100/MAX_ENROLL;
 				bar.setProgress(Progress);
+				return;
+			}else if(values[0].equals("FAIL")){
+				bar.setProgress(0);
+				logMsg("AUTO录入指纹失败");
 				return;
 			}
 
@@ -1697,7 +1702,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 						// TODO Auto-generated method stub
 						Toast.makeText(
 								MainActivity.this,
-								"设置次数录入次数: " + verify_fingerId , Toast.LENGTH_LONG)
+								"设置验证的指纹ID: " + verify_fingerId , Toast.LENGTH_LONG)
 								.show();
 						isChange = false;
 
