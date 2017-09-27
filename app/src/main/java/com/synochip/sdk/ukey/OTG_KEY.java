@@ -2022,10 +2022,10 @@ public class OTG_KEY {
 
 		cmd[0] = Auto_Identify;
 		cmd[1] = 0x00;
-//		cmd[2] = (byte) (bufferId>>8 & 0xff);
-//		cmd[3] = (byte) (bufferId & 0xff);
-		cmd[2] = (byte) 255;
-		cmd[3] = (byte) 255;
+		cmd[2] = (byte) (bufferId>>8 & 0xff);
+		cmd[3] = (byte) (bufferId & 0xff);
+//		cmd[2] = (byte) 255;
+//		cmd[3] = (byte) 255;
 		cmd[4] = 0x00;
 		cmd[5] = (byte) (~STA_1 & ( PRE_1 | LED_1));
 

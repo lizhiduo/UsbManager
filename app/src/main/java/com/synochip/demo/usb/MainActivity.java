@@ -100,6 +100,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	private static final byte AUTO_VERIFY_FAIL = 0x01;
 	private static final int PS_FAIL = 0x01;
 
+	private static final int VERIFY_FULL_TEMP = 0xffff;
+
 	//private int opened = 0;
 	public int thread_i = 0;
 	public int thread_sum = 0;
@@ -890,11 +892,11 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 				if( globalControl == false )
 				{
 
-					ret = msyUsbKey.PSCancel(DEV_ADDR);
-					publishProgress("ret； " + ret);
-					if(ret == PS_OK){
-						publishProgress("取消自动注册模板成功");
-					}
+//					ret = msyUsbKey.PSCancel(DEV_ADDR);
+//					publishProgress("ret； " + ret);
+//					if(ret == PS_OK){
+//						publishProgress("停止自动注册模板成功");
+//					}
 
 					publishProgress("录入指纹=>停止");
 
@@ -1017,7 +1019,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 			int fingerId = 0;
 			byte[] state = new byte[6];
 
-			ret = msyUsbKey.PSAutoIdentify(DEV_ADDR, 255, param);
+			ret = msyUsbKey.PSAutoIdentify(DEV_ADDR, verify_fingerId, param);
 			if(ret < 0){
 				return -1;
 			}
@@ -1612,6 +1614,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
+						if (!isChange){MAX_ENROLL = 2;}
 						Toast.makeText(
 								MainActivity.this,
 								"设置次数录入次数: " + MAX_ENROLL , Toast.LENGTH_LONG)
@@ -1700,11 +1703,13 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
+						if(!isChange){verify_fingerId = 0;}
 						Toast.makeText(
 								MainActivity.this,
 								"设置验证的指纹ID: " + verify_fingerId , Toast.LENGTH_LONG)
 								.show();
 						isChange = false;
+
 
 						//开启验证线程
 						AutoIdentifyAsyncTask autoIdentifyAsyncTask = new AutoIdentifyAsyncTask();
@@ -1717,7 +1722,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
-
+						globalControl = false;
+						ctlStatus(false);
 					}
 				});
 		builder7.create();

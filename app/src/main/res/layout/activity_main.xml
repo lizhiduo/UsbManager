@@ -110,7 +110,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="自动验证指纹"
+                android:text="单一比对"
                 />
         </LinearLayout>
        <LinearLayout
