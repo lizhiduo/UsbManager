@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/OTG_FINGER.iml" filepath="$PROJECT_DIR$/OTG_FINGER.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/fpmodule.iml" filepath="$PROJECT_DIR$/fpmodule.iml" />
     </modules>
   </component>
 </project>

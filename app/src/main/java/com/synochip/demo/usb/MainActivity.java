@@ -137,7 +137,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	//private EditText mLongEdit;
 	ProgressBar bar = null;
 	boolean ifChecked = false;
-	
+	boolean isOpen = false;
 	//private EditText mEditText;
 	ImageView fingerView = null;
 	
@@ -148,8 +148,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 	public boolean start_clt = false;
 
 	NumberPicker mNumberPicker;
-//	private final static String[] number = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
-//	private int mSeletedIndex;
+
 	private boolean isChange = false;
 	private int txt1 = 2;
 
@@ -239,7 +238,8 @@ public class MainActivity extends  Activity implements View.OnClickListener {
     
     	if (v == mOpen) {
 			boolean requested = false;
-			
+
+
 				for (UsbDevice device : mUsbManager.getDeviceList().values()) {
 					if (0x2109 == device.getVendorId()  && 0x7638 == device.getProductId() )
 					{
@@ -264,6 +264,11 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 					logMsg("no Permission!");
 					return;
 				}
+				if(isOpen){
+					Toast.makeText(this,"设备已打开", Toast.LENGTH_SHORT).show();
+					return;
+				}
+				isOpen = true;
 					try {
 						msyUsbKey = null;
 						msyUsbKey = new OTG_KEY(mUsbManager,mDevice);
@@ -320,6 +325,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
 			start_clt = true;
     	} else if (v == mClose) {
 			try {
+				isOpen = false;
 				//uiState(true);
 				logMsg("设备已关闭");
 				openState(true);
@@ -527,6 +533,7 @@ public class MainActivity extends  Activity implements View.OnClickListener {
  						+ "\n");
  				openState(true);
  				start_clt = false;
+				isOpen = false;
  				if(null != msyUsbKey){
  					msyUsbKey.CloseCard(mhKey);
  					msyUsbKey = null;
